@@ -1,5 +1,7 @@
 .git
+.gitignore
 .dockerignore
-dist/*
+dist
 Dockerfile
 Makefile
+README.md
