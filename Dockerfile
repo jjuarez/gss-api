@@ -10,5 +10,5 @@ RUN go mod download && \
 
 FROM alpine:3.16.2 AS runtime
 WORKDIR /
-COPY --from=builder /build/gss-api /gss-api
-ENTRYPOINT [ "/gss-api" ]
+COPY --from=builder /build/api /api
+ENTRYPOINT [ "/api" ]
