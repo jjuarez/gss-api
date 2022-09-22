@@ -5,7 +5,7 @@
 
 DIST_DIRECTORY := ./dist
 GIT_COMMIT     := $(shell git rev-parse --verify HEAD 2>/dev/null)
-VERSION        := $(shell git describe --tags --dirty 2>/dev/null)
+VERSION        := $(shell git describe --tags 2>/dev/null)
 
 DOCKER_REGISTRY            := docker.io
 DOCKER_REGISTRY_NAMESPACE  := jjuarez
@@ -45,7 +45,7 @@ ifdef VERSION
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg VERSION=$(VERSION) \
 		--tag $(DOCKER_IMAGE_NAME):$(GIT_COMMIT) \
-		--tag $(DOCKER_IMAGE_NAME):$(VESION) \
+		--tag $(DOCKER_IMAGE_NAME):$(VERSION) \
 		--tag $(DOCKER_IMAGE_NAME):latest \
 		--target runtime \
 		--file Dockerfile \
