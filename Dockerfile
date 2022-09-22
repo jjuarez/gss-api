@@ -5,7 +5,6 @@ ARG VERSION
 WORKDIR /build
 COPY . ./
 RUN go mod download && \
-    go mod tidy && \
     go build -ldflags "-X main.Version=${VERSION} -X main.GitCommit=${GIT_COMMIT}" -o /build/ -v ./...
 
 
