@@ -1,7 +1,9 @@
 .git
 .gitignore
+.envrc
 .dockerignore
-dist
+.ci
+bin
 Dockerfile
 Makefile
 README.md
