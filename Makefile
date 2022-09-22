@@ -1,9 +1,9 @@
 #!/usr/bin/env make
 
 .DEFAULT_GOAL  := help
-.DEFAULT_SHELL := /bin/sh
+.DEFAULT_SHELL := /bin/bash
 
-DIST_DIRECTORY := ./dist
+DIST_DIRECTORY := ./bin
 GIT_COMMIT     := $(shell git rev-parse --verify HEAD 2>/dev/null)
 VERSION        := $(shell git describe --tags 2>/dev/null)
 
