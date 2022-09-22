@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
-	config "github.com/jjuarez/gss-api/internal/config"
-	utils "github.com/jjuarez/gss-api/internal/utils"
+	"github.com/jjuarez/gss-api/internal/config"
+	"github.com/jjuarez/gss-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,13 +30,11 @@ func main() {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
+
 	router := gin.Default()
 	server := &http.Server{
-		Addr:           serverAddress.String(),
-		Handler:        router,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		Addr:    serverAddress.String(),
+		Handler: router,
 	}
 
 	router.GET("/ping", func(context *gin.Context) {
