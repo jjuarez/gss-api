@@ -1,24 +1,13 @@
 package main
 
 import (
-	"context"
-	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
-	"github.com/jjuarez/gss-api/internal/config"
-	"github.com/jjuarez/gss-api/internal/utils"
-
-	"github.com/gin-gonic/gin"
-)
-
-const (
-	gssAPITargetEnvKey       = "GSSAPI_TARGET"
-	gssAPITargetDefaultValue = "Defalt Target"
-	configurationErrorCode   = 1
+	config "github.com/jjuarez/gss-api/internal/config"
+	utils "github.com/jjuarez/gss-api/internal/utils"
+	"github.com/rs/zerolog"
 )
 
 var (
@@ -28,65 +17,39 @@ var (
 	GitCommit string
 )
 
+type application struct {
+	cfg    config.Config
+	logger zerolog.Logger
+}
+
 func main() {
-	configuredTarget := utils.GetEnvWithDefault(gssAPITargetEnvKey, gssAPITargetDefaultValue)
-	serverAddress, err := config.New()
+	environment := utils.Getenv(config.GSSAPIEnvironmentEnvKey, config.DefaultEnvironment)
+	config.SetupEnvironment(environment)
+
+	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+	srvCfg, err := config.NewConfig()
 	if err != nil {
-		log.Fatalf("Error: %v\n", err)
-		os.Exit(configurationErrorCode)
+		logger.Error().Msgf("Error: %v", err)
+		os.Exit(1)
 	}
 
-	log.Printf("GSS API Version: %s", Version)
-	log.Printf("  server address: %s", serverAddress.String())
-	log.Printf("  configured target: %s", configuredTarget)
-
-	router := gin.Default()
-	server := &http.Server{
-		Addr:    serverAddress.String(),
-		Handler: router,
+	app := &application{
+		cfg:    *srvCfg,
+		logger: logger,
 	}
 
-	// Routes
-	router.GET("/ping", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-			"version": Version,
-		})
-	})
+	mux := http.NewServeMux()
+	//mux.HandleFunc("/v2/healhcheck", app.healthcheckHandler)
 
-	router.GET("/target", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": configuredTarget,
-		})
-	})
-
-	router.GET("/slow", func(context *gin.Context) {
-		time.Sleep(5 * time.Second)
-		context.JSON(http.StatusOK, gin.H{
-			"message": "This was superslow",
-		})
-	})
-
-	// Main
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal("listen:", err)
-		}
-	}()
-
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shudown server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatal("Server shutdown:", err)
+	srv := &http.Server{
+		Addr:         app.cfg.Address(),
+		Handler:      mux,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
-	select {
-	case <-ctx.Done():
-		log.Println("timeout 5 seconds.")
-	}
-	log.Println("Server exiting")
+
+	logger.Debug().Msgf("Starting: '%v' server listening on -> %s", app.cfg.Environment, srv.Addr)
+	err = srv.ListenAndServe()
+	logger.Fatal()
 }

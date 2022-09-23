@@ -5,47 +5,75 @@ import (
 	"strconv"
 
 	utils "github.com/jjuarez/gss-api/internal/utils"
+	dotenv "github.com/joho/godotenv"
 )
 
 const (
-	httpHostEnvKey = "HTTP_HOST"
-	httpPortEnvKey = "HTTP_PORT"
+	// GSSAPIEnvironmentEnvKey The configuration environment variables
+	GSSAPIEnvironmentEnvKey = "GSSAPI_ENV"
+	httpHostEnvKey          = "HTTP_HOST"
+	httpPortEnvKey          = "HTTP_PORT"
+
+	// DefaultEnvironment ...
+	DefaultEnvironment = "development"
 	// DefaultHTTPHost ...
-	DefaultHTTPHost = "0.0.0.0"
+	DefaultHTTPHost = "localhost"
 	// DefaultHTTPPort ...
 	DefaultHTTPPort = "8080"
 )
 
+// SetupEnvironment ...
+func SetupEnvironment(environment string) {
+	configFiles := []string{
+		".env." + environment + ".local",
+		".env." + environment,
+	}
+	for _, f := range configFiles {
+		dotenv.Load(f)
+	}
+	dotenv.Load()
+}
+
+// Stringer interface
 type Stringer interface {
 	String() string
 }
 
-// ServerConfig ...
-type ServerConfig struct {
-	host string
-	port int
+// Addresser interface
+type Addresser interface {
+	Address() string
 }
 
-func (sc ServerConfig) String() string {
-	return fmt.Sprintf("%s:%d", sc.host, sc.port)
+// Config ...
+type Config struct {
+	Environment string
+	Host        string `valid:"host"`
+	Port        int    `valid:"port"`
 }
 
-// New ...
-func New() (*ServerConfig, error) {
-	host := utils.GetEnvWithDefault(httpHostEnvKey, DefaultHTTPHost)
-	port := utils.GetEnvWithDefault(httpPortEnvKey, DefaultHTTPPort)
+// String implements the interface for config.Config
+func (c Config) String() string {
+	return fmt.Sprintf("{'environment':'%s','host':'%s','port':'%d'}", c.Environment, c.Host, c.Port)
+}
 
-	numPort, err := strconv.Atoi(port)
+// Address implements the interface for config.Config
+func (c Config) Address() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
+// NewConfig ...
+func NewConfig() (*Config, error) {
+	env := utils.Getenv(GSSAPIEnvironmentEnvKey, DefaultEnvironment)
+	host := utils.Getenv(httpHostEnvKey, DefaultHTTPHost)
+	port, err := strconv.Atoi(utils.Getenv(httpPortEnvKey, DefaultHTTPPort))
+
 	if err != nil {
-		return nil, fmt.Errorf("invalid HTTP server port: %v", port)
+		return nil, err
 	}
 
-	if numPort < 1024 || numPort > 65535 {
-		return nil, fmt.Errorf("HTTP server port out of valid range: %v", port)
-	}
-
-	return &ServerConfig{
-		host: host,
-		port: numPort,
+	return &Config{
+		Environment: env,
+		Host:        host,
+		Port:        port,
 	}, nil
 }

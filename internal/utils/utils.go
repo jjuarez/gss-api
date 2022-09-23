@@ -2,11 +2,11 @@ package utils
 
 import "os"
 
-// GetEnvWithDefault ...
-func GetEnvWithDefault(envKey string, defaultValue string) string {
-	value := os.Getenv(envKey)
-	if value != "" {
-		return value
+// Getenv ...
+func Getenv(envKey string, defaultValue string) string {
+	envValue := os.Getenv(envKey)
+	if "" == envValue {
+		envValue = defaultValue
 	}
-	return defaultValue
+	return envValue
 }
