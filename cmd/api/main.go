@@ -26,7 +26,7 @@ func main() {
 	environment := utils.Getenv(config.GSSAPIEnvironmentEnvKey, config.DefaultEnvironment)
 	config.SetupEnvironment(environment)
 
-	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel).With().Timestamp().Logger()
 	srvCfg, err := config.NewConfig()
 	if err != nil {
 		logger.Error().Msgf("Error: %v", err)
@@ -38,18 +38,15 @@ func main() {
 		logger: logger,
 	}
 
-	mux := http.NewServeMux()
-	//mux.HandleFunc("/v2/healhcheck", app.healthcheckHandler)
-
 	srv := &http.Server{
 		Addr:         app.cfg.Address(),
-		Handler:      mux,
+		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	logger.Debug().Msgf("Starting: '%v' server listening on -> %s", app.cfg.Environment, srv.Addr)
+	logger.Debug().Msgf("Starting %v server (%s) listening on -> %s", app.cfg.Environment, Version, srv.Addr)
 	err = srv.ListenAndServe()
-	logger.Fatal()
+	logger.Error().Msgf("Error: %v", err)
 }

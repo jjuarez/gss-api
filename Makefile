@@ -29,6 +29,10 @@ else
 	@go build -ldflags "-X 'main.GitCommit=$(GIT_COMMIT)' -X 'main.Version=v0.0.0'" -o $(DIST_DIRECTORY) -v ./...
 endif
 
+.PHONY: run
+run: ## Run the service
+	@$(DIST_DIRECTORY)/api
+
 .PHONY: docker/login
 docker/login:
 ifdef DOCKER_PASSWORD
