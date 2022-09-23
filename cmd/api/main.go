@@ -26,7 +26,13 @@ func main() {
 	environment := utils.Getenv(config.GSSAPIEnvironmentEnvKey, config.DefaultEnvironment)
 	config.SetupEnvironment(environment)
 
-	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel).With().Timestamp().Logger()
+	logger := zerolog.New(os.Stdout).
+		Level(zerolog.TraceLevel).
+		With().
+		Timestamp().
+		Caller().
+		Logger()
+
 	srvCfg, err := config.NewConfig()
 	if err != nil {
 		logger.Error().Msgf("Error: %v", err)
