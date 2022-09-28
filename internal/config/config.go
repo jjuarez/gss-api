@@ -8,18 +8,20 @@ import (
 	dotenv "github.com/joho/godotenv"
 )
 
+// Configuration environment variables
 const (
 	// GSSAPIEnvironmentEnvKey The configuration environment variables
-	GSSAPIEnvironmentEnvKey = "GSSAPI_ENV"
-	httpHostEnvKey          = "HTTP_HOST"
-	httpPortEnvKey          = "HTTP_PORT"
+	GSSAPI_ENV_ENVKEY = "GSSAPI_ENV"
+	HTTP_HOST_ENVKEY  = "HTTP_HOST"
+	HTTP_PORT_ENVKEY  = "HTTP_PORT"
+)
 
-	// DefaultEnvironment ...
-	DefaultEnvironment = "development"
-	// DefaultHTTPHost ...
-	DefaultHTTPHost = "localhost"
-	// DefaultHTTPPort ...
-	DefaultHTTPPort = "8080"
+// Some configuration default values
+const (
+	DEFAULT_ENV       = "development"
+	DEFAULT_HTTP_HOST = "localhost"
+	DEFAULT_HTTP_PORT = "8080"
+	DE
 )
 
 // SetupEnvironment ...
@@ -62,10 +64,10 @@ func (c Config) Address() string {
 }
 
 // NewConfig ...
-func NewConfig() (*Config, error) {
-	env := utils.Getenv(GSSAPIEnvironmentEnvKey, DefaultEnvironment)
-	host := utils.Getenv(httpHostEnvKey, DefaultHTTPHost)
-	port, err := strconv.Atoi(utils.Getenv(httpPortEnvKey, DefaultHTTPPort))
+func New() (*Config, error) {
+	env := utils.Getenv(GSSAPI_ENV_ENVKEY, DEFAULT_ENV)
+	host := utils.Getenv(HTTP_HOST_ENVKEY, DEFAULT_HTTP_HOST)
+	port, err := strconv.Atoi(utils.Getenv(HTTP_PORT_ENVKEY, DEFAULT_HTTP_PORT))
 
 	if err != nil {
 		return nil, err
